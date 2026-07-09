@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>약손 — 최종 발표 (4분)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<style>
+  :root{
+    --navy:#0f1e3d; --green:#2f6a4f; --ink:#1f2937; --gray:#5b6773;
+    --line:#cbd5e1; --soft:#f1f5f9; --orange:#c2410c; --red:#b91c1c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:"Pretendard","Pretendard Variable",system-ui,"Malgun Gothic",sans-serif;
+    background:#0b1220;color:var(--ink);overflow:hidden;
+  }
+  .deck{position:relative;width:100vw;height:100vh;}
+  .slide{
+    position:absolute;inset:0;display:none;flex-direction:column;
+    background:#fff;padding:6vh 7vw;
+  }
+  .slide.active{display:flex;}
+
+  /* 상단 제목 바 */
+  .head{display:flex;align-items:center;gap:18px;margin-bottom:4vh;}
+  .num{
+    flex-shrink:0;width:54px;height:54px;border-radius:50%;background:var(--navy);
+    color:#fff;font-size:26px;font-weight:900;display:flex;align-items:center;justify-content:center;
+  }
+  .head h2{font-size:38px;font-weight:900;color:var(--navy);letter-spacing:-1px;}
+
+  .body{flex:1;display:flex;flex-direction:column;justify-content:center;}
+  ul{list-style:none;}
+  li{font-size:28px;font-weight:600;color:var(--ink);margin:10px 0;line-height:1.5;padding-left:34px;position:relative;}
+  li::before{content:"•";position:absolute;left:6px;color:var(--green);font-weight:900;}
+  .sec{font-size:26px;font-weight:900;color:var(--green);margin:18px 0 6px;}
+  .muted{color:var(--gray);font-weight:500;}
+  .chk{color:#b45309;font-size:20px;font-weight:700;}
+
+  /* 표지 */
+  .title-slide{align-items:center;justify-content:center;text-align:center;
+    background:radial-gradient(circle at 50% 30%, #16264a, #0f1e3d);color:#fff;}
+  .title-slide .app{font-size:92px;font-weight:900;letter-spacing:-2px;}
+  .title-slide .slogan{font-size:40px;font-weight:900;color:#8fe3a5;margin-top:10px;}
+  .title-slide .hook{font-size:26px;font-weight:600;color:#cbd5e1;margin-top:34px;line-height:1.6;}
+
+  /* 페르소나 */
+  .persona{display:flex;gap:26px;margin-bottom:18px;flex-wrap:wrap;}
+  .pcard{flex:1;min-width:320px;background:var(--soft);border:2px solid var(--line);border-radius:20px;padding:24px 26px;}
+  .pcard .pt{font-size:26px;font-weight:900;color:var(--navy);}
+  .pcard .pd{font-size:21px;color:var(--gray);font-weight:600;margin-top:10px;line-height:1.5;}
+  .keyline{font-size:26px;font-weight:900;color:var(--green);text-align:center;margin-top:6px;}
+
+  /* I-P-O */
+  .ipo{display:flex;align-items:stretch;gap:16px;margin-bottom:26px;}
+  .ipo .arrow{align-self:center;font-size:40px;color:var(--gray);font-weight:900;}
+  .ipo-box{flex:1;border-radius:20px;padding:24px 18px;color:#fff;text-align:center;}
+  .ipo-box.i{background:var(--navy);}
+  .ipo-box.p{background:var(--green);}
+  .ipo-box.o{background:var(--orange);}
+  .ipo-box .t{font-size:24px;font-weight:900;}
+  .ipo-box .d{font-size:18px;font-weight:600;margin-top:10px;line-height:1.45;opacity:.95;}
+
+  /* 표 */
+  table{width:100%;border-collapse:collapse;font-size:24px;margin-top:10px;}
+  th,td{border:2px solid var(--line);padding:18px 20px;text-align:left;}
+  th{background:var(--navy);color:#fff;font-weight:900;}
+  td.k{font-weight:900;color:var(--navy);width:16%;background:var(--soft);}
+  td.us{background:#e9f7ef;font-weight:800;}
+
+  /* 마무리 */
+  .final{font-size:34px;font-weight:900;color:var(--navy);text-align:center;margin-top:18px;}
+
+  /* HUD */
+  .hud{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+    display:flex;align-items:center;gap:16px;background:rgba(15,30,61,.9);color:#fff;
+    padding:8px 16px;border-radius:999px;z-index:50;font-size:16px;font-weight:800;}
+  .hud button{background:none;border:none;color:#fff;font-size:24px;cursor:pointer;line-height:1;}
+  .hud button:active{opacity:.6;}
+  .hint{position:fixed;top:14px;right:18px;color:#94a3b8;font-size:13px;z-index:50;font-weight:700;}
+  /* 발표자 노트 */
+  .notes{position:fixed;left:0;right:0;bottom:0;background:#111827;color:#e5e7eb;
+    padding:18px 24px;font-size:18px;line-height:1.6;display:none;z-index:60;max-height:38vh;overflow:auto;}
+  .notes.show{display:block;}
+  .notes b{color:#8fe3a5;}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+  <!-- 1. 표지 + 한 줄 소개(Hook) -->
+  <section class="slide title-slide" data-notes="[1] 표지 + 한 줄 소개(Hook) · 0:20 — 안녕하세요. 저희 앱은 약손입니다. 눈이 어두워 약봉투를 못 읽는 어르신의 복약 문제를, 찍으면 읽어주는 약손으로 해결합니다.">
+    <div class="app">💊 약손</div>
+    <div class="slogan">약속하는 약손</div>
+    <div class="hook">"눈이 어두운 어르신의 약 복용 문제를,<br>찍으면 읽어주는 약손으로 해결합니다."</div>
+  </section>
+
+  <!-- 2. 문제 & 왜 지금 -->
+  <section class="slide" data-notes="[2] 문제 & 왜 지금 · 0:40 — 약봉투 글씨는 너무 작습니다. 무슨 약인지, 하루 몇 번 먹는지 헷갈려 잘못 드시거나 거르게 되고 복약사고로 이어집니다. 혼자 사시는 분은 물어볼 사람도 없죠. 그리고 지금 우리나라는 이미 초고령사회에 진입했고 어르신 대부분이 여러 약을 한꺼번에 드십니다. 문제는 더 커집니다. ※통계는 실제 수치로 교체.">
+    <div class="head"><div class="num">2</div><h2>문제 &amp; '왜 지금'</h2></div>
+    <div class="body">
+      <div class="sec">● 무엇이 문제인가</div>
+      <ul>
+        <li>약봉투 작은 글씨 → 무슨 약인지, 하루 몇 번 먹는지 헷갈림</li>
+        <li>잘못 복용·거름 → 복약사고, 건강 악화</li>
+        <li>혼자 사는 어르신은 물어볼 사람도 없음</li>
+      </ul>
+      <div class="sec">● 왜 지금인가 (초고령사회)</div>
+      <ul>
+        <li>2024년 말 대한민국 초고령사회 진입 — 65세 이상 20% 돌파 <span class="chk">※수치 확인</span></li>
+        <li>노인 대부분이 만성질환으로 여러 약을 동시에 복용(다제약물) <span class="chk">※수치 확인</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 3. 타깃 페르소나 -->
+  <section class="slide" data-notes="[3] 타깃 페르소나 · 0:35 — 핵심 사용자는 혼자 사시는 74세 이복순 님입니다. 여러 약을 받아오시지만 매번 헷갈리시죠. 멀리 사는 딸 김미영 씨는 늘 불안합니다. 여기서 중요한 건, 쓰는 사람과 돈 내는 사람이 다르다는 점입니다.">
+    <div class="head"><div class="num">3</div><h2>타깃 — 페르소나</h2></div>
+    <div class="body">
+      <div class="persona">
+        <div class="pcard">
+          <div class="pt">👵 이복순 · 74세 · 1인 가구</div>
+          <div class="pd">전화·카톡은 하지만 작은 글씨는 안 보임<br>정형외과·내과에서 한 번에 3~4개 약 처방 → 매번 헷갈림</div>
+        </div>
+        <div class="pcard">
+          <div class="pt">👩 김미영 · 45세 · 이복순 님의 딸</div>
+          <div class="pd">타지 거주, 부모님 복약이 늘 걱정<br>"약 잘 드시는지"만 알면 기꺼이 돈 낼 의향 (지불자)</div>
+        </div>
+      </div>
+      <div class="keyline">핵심 : 쓰는 사람(어르신)과 돈 내는 사람(자녀)이 다르다</div>
+    </div>
+  </section>
+
+  <!-- 4. 솔루션 & 핵심기능 (I-P-O) -->
+  <section class="slide" data-notes="[4] 솔루션 & 핵심기능(I-P-O) · 0:45 — 동작은 입력-처리-출력 세 단계입니다. 입력은 약봉투를 찍는 것 딱 한 번. 처리는 글자를 읽어 시니어 눈높이의 쉬운 말로 정리하고, 출력으로 큰 글씨와 음성으로 알려드립니다. 여기에 복약 알림, 소진 3일 전 알림, 가족 공유, 주변 병원, 긴급 SOS까지 담았습니다.">
+    <div class="head"><div class="num">4</div><h2>솔루션 &amp; 핵심 기능</h2></div>
+    <div class="body">
+      <div class="ipo">
+        <div class="ipo-box i"><div class="t">입력 (Input)</div><div class="d">약봉투를<br>카메라로 찍기 한 번</div></div>
+        <div class="arrow">→</div>
+        <div class="ipo-box p"><div class="t">처리 (Process)</div><div class="d">글자 인식 →<br>시니어 눈높이로 정리<br>(이름·효능·복용법·하루 몇 번)</div></div>
+        <div class="arrow">→</div>
+        <div class="ipo-box o"><div class="t">출력 (Output)</div><div class="d">큰 글씨 + 음성<br>+ 쉬운 설명</div></div>
+      </div>
+      <div class="sec">출력으로 더해지는 돌봄 기능</div>
+      <ul>
+        <li>⏰ 복약 알림(아침·낮·저녁) · 💊 약 소진 3일 전 알림</li>
+        <li>👨‍👩‍👧 가족 공유(최대 5명) · 🏥 주변 병원 찾기 · 🆘 긴급 SOS</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 5. 기존 서비스와 차이 -->
+  <section class="slide" data-notes="[5] 기존 서비스와 차이 · 0:30 — 기존 서비스는 약 이름을 직접 검색해야 하고 일반인 대상입니다. 약손은 찍기 한 번, 시니어 전용, 그리고 단순 정보가 아니라 알림·가족 돌봄·긴급 SOS까지 아우르는 통합 돌봄이라는 점이 다릅니다.">
+    <div class="head"><div class="num">5</div><h2>기존 서비스와 무엇이 다른가</h2></div>
+    <div class="body">
+      <table>
+        <tr><th>구분</th><th>기존 (검색·약학정보)</th><th>약손</th></tr>
+        <tr><td class="k">사용법</td><td>약 이름 타이핑 검색</td><td class="us">찍기 한 번</td></tr>
+        <tr><td class="k">대상</td><td>일반인</td><td class="us">시니어 전용 (큰 글씨·음성·쉬운 말)</td></tr>
+        <tr><td class="k">범위</td><td>약 하나씩 검색</td><td class="us">처방전 통째로 + 알림·가족·병원·SOS</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 6. 프로토타입 시연 -->
+  <section class="slide" data-notes="[6] 프로토타입 시연 · 0:50 ★핵심 — 실제 작동하는 화면을 보여드리겠습니다. (찍고) 약 네 개를 큰 글씨와 음성으로, 하루 몇 번 먹는지까지. 복약 시간엔 시계가 울리고, 가족의 약도 함께 챙기고, 내 위치 주변 병원을 거리순으로 찾아 길안내하고, 위급하면 SOS를 5초 누르면 위치와 함께 119로 연결됩니다. ※약.jpg 준비, localhost에서 소리·GPS 시연.">
+    <div class="head"><div class="num">6</div><h2>프로토타입 시연 (실제 웹 앱)</h2></div>
+    <div class="body">
+      <div class="sec">약.jpg로 라이브 데모 — 시연 순서</div>
+      <ul>
+        <li>① 약봉투 찍기 → 약 4개를 <b>큰 글씨 + 음성</b>으로, 하루 몇 번까지</li>
+        <li>② 복약 알림 → 시계가 뜨고 진동·소리로 알려줌</li>
+        <li>③ 가족 관리 → 등록한 가족의 약을 함께 확인</li>
+        <li>④ 주변 병원 → GPS로 가까운 병원 거리순 + 길찾기</li>
+        <li>⑤ SOS → 5초 꾹 → 사이렌 + 현재 위치와 함께 119</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 7. 기대효과 & 마무리 -->
+  <section class="slide" data-notes="[7] 기대효과 & 마무리 · 0:20 — 약손은 어르신께 자립을, 자녀에게 안심을, 사회에는 의료비 절감을 드립니다. 앞으로 의약품 DB 연동과 약국·지자체 제휴로 키워가겠습니다. 약을 챙기겠다는 약속, 약속하는 약손이었습니다. 감사합니다.">
+    <div class="head"><div class="num">7</div><h2>기대 효과 &amp; 마무리</h2></div>
+    <div class="body">
+      <div class="sec">기대 효과</div>
+      <ul>
+        <li>어르신 — 혼자서도 정확한 복약 → 복약사고↓, 자립↑</li>
+        <li>자녀 — 멀리서도 안심</li>
+        <li>사회 — 복약순응도↑ → 의료비 절감</li>
+      </ul>
+      <div class="sec">향후 계획</div>
+      <ul>
+        <li>실제 의약품 DB 연동 · 약국/지자체 제휴 · 푸시 알림</li>
+      </ul>
+      <div class="final">약을 챙기겠다는 약속 — 약속하는 약손</div>
+    </div>
+  </section>
+
+</div>
+
+<div class="hint">← → 이동 · F 전체화면 · N 발표자 노트</div>
+<div class="hud">
+  <button id="prev">‹</button>
+  <span id="counter">1 / 7</span>
+  <button id="next">›</button>
+</div>
+<div class="notes" id="notes"></div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll(".slide"));
+  const counter = document.getElementById("counter");
+  const notes = document.getElementById("notes");
+  let i = 0, notesOn = false;
+
+  function render(){
+    slides.forEach((s,idx)=> s.classList.toggle("active", idx===i));
+    counter.textContent = `${i+1} / ${slides.length}`;
+    if(notesOn){ notes.textContent = slides[i].dataset.notes || ""; }
+  }
+  function go(n){ i = Math.max(0, Math.min(slides.length-1, n)); render(); }
+  function next(){ go(i+1); }
+  function prev(){ go(i-1); }
+
+  document.getElementById("next").onclick = next;
+  document.getElementById("prev").onclick = prev;
+
+  document.addEventListener("keydown", e=>{
+    if(["ArrowRight","PageDown"," "].includes(e.key)){ e.preventDefault(); next(); }
+    else if(["ArrowLeft","PageUp"].includes(e.key)){ e.preventDefault(); prev(); }
+    else if(e.key==="Home"){ go(0); }
+    else if(e.key==="End"){ go(slides.length-1); }
+    else if(e.key.toLowerCase()==="f"){ document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); }
+    else if(e.key.toLowerCase()==="n"){ notesOn=!notesOn; notes.classList.toggle("show", notesOn); render(); }
+  });
+
+  // 화면 좌/우 클릭으로도 이동
+  document.getElementById("deck").addEventListener("click", e=>{
+    (e.clientX > window.innerWidth/2) ? next() : prev();
+  });
+
+  render();
+</script>
+</body>
+</html>

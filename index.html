@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>약손</title>
+<!-- 부드러운 폰트: Pretendard -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<style>
+  :root{
+    --ink:#111827;
+    --bg:#ffffff;
+    --accent:#1d4ed8;
+    --accent-dark:#1e3a8a;
+    --warn:#b91c1c;
+    --soft:#f1f5f9;
+    --line:#cbd5e1;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Pretendard","Pretendard Variable",system-ui,-apple-system,"Malgun Gothic",sans-serif;
+    background:var(--soft);
+    color:var(--ink);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .phone{
+    max-width:460px;
+    margin:0 auto;
+    min-height:100vh;
+    background:var(--bg);
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 0 30px rgba(0,0,0,.08);
+    position:relative;
+  }
+  header{
+    background:#0f1e3d;
+    color:#fff;
+    padding:20px 18px;
+    text-align:center;
+    position:relative;
+    z-index:2;
+  }
+  header .title{font-size:26px;font-weight:800;letter-spacing:-.5px;}
+  header .sub{font-size:15px;opacity:.9;margin-top:4px;}
+  #backBtn{
+    position:absolute;
+    left:10px;top:10px;
+    display:none;
+    align-items:center;gap:2px;
+    background:rgba(255,255,255,.18);
+    color:#fff;border:none;
+    border-radius:9px;
+    padding:6px 10px;
+    font-size:14px;font-weight:700;
+    cursor:pointer;
+  }
+  #backBtn:active{background:rgba(255,255,255,.32);}
+  body.not-home #backBtn{display:flex;}
+
+  .screen{flex:1;display:none;flex-direction:column;padding:22px 18px 96px;position:relative;z-index:1;}
+  .screen.active{display:flex;}
+  /* 시작 화면에서는 하단 바가 없으니 여백을 줄임 */
+  body.on-splash #splash{padding-bottom:30px;}
+
+  /* ===== 시작(스플래시) 화면 ===== */
+  #splash{align-items:center;justify-content:center;text-align:center;}
+  .bubble{
+    background:#fff;border:2px solid var(--line);border-radius:20px;
+    padding:16px 22px;font-size:20px;font-weight:800;line-height:1.45;color:var(--ink);
+    box-shadow:0 6px 18px rgba(0,0,0,.07);margin-bottom:34px;position:relative;
+    animation:pop .5s ease-out both;
+  }
+  .bubble::before{
+    content:"";position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);
+    border-width:16px 12px 0 12px;border-style:solid;border-color:var(--line) transparent transparent transparent;
+  }
+  .bubble::after{
+    content:"";position:absolute;bottom:-12px;left:50%;transform:translateX(-50%);
+    border-width:14px 10px 0 10px;border-style:solid;border-color:#fff transparent transparent transparent;
+  }
+  /* 인사하는 사람 캐릭터 */
+  .figure-wrap{animation:float 3s ease-in-out infinite;}
+  .person{width:150px;margin:0 auto;display:flex;flex-direction:column;align-items:center;}
+  .person .upper{
+    display:flex;flex-direction:column;align-items:center;position:relative;z-index:2;
+    transform-origin:50% 100%;                 /* 허리에서 숙이도록 */
+    animation:bow 4.2s ease-in-out infinite;
+  }
+  .person .head{width:58px;height:58px;border-radius:50%;background:#f7cba4;border:2px solid #e6b48c;position:relative;}
+  .person .hair{position:absolute;top:-9px;left:-5px;right:-5px;height:34px;background:#3b2a20;border-radius:34px 34px 0 0;}
+  .person .face{position:absolute;top:24px;left:0;right:0;}
+  .person .face::before{content:"";position:absolute;top:0;left:16px;width:6px;height:6px;border-radius:50%;background:#4b3225;box-shadow:22px 0 0 #4b3225;animation:blink 3.4s infinite;}
+  .person .face::after{content:"";position:absolute;top:14px;left:50%;transform:translateX(-50%);width:18px;height:9px;border:2px solid #4b3225;border-top:none;border-radius:0 0 18px 18px;}
+  .person .torso{width:80px;height:80px;margin-top:-2px;background:linear-gradient(#1d4ed8,#1e3a8a);border-radius:26px 26px 16px 16px;position:relative;}
+  .person .arm{position:absolute;top:10px;width:16px;height:58px;background:#1e40af;border-radius:10px;}
+  .person .arm.left{left:-9px;transform:rotate(7deg);}
+  .person .arm.right{right:-9px;transform:rotate(-7deg);}
+  .person .lower{width:72px;height:34px;margin-top:-2px;background:#334155;border-radius:0 0 16px 16px;z-index:1;}
+
+  .slogan{
+    margin-top:32px;font-size:34px;font-weight:900;letter-spacing:-1.5px;
+    color:#0f1e3d;line-height:1.25;
+  }
+  .slogan b{color:#2f6a4f;}
+  .splash-title{margin-top:12px;font-size:17px;font-weight:700;color:#64748b;line-height:1.5;}
+  .splash-progress{width:70%;height:6px;background:#e2e8f0;border-radius:999px;margin-top:28px;overflow:hidden;}
+  .splash-progress span{display:block;height:100%;width:0;background:var(--accent);border-radius:999px;animation:fill 5s linear forwards;}
+  .skip-btn{margin-top:16px;background:none;border:none;color:#64748b;font-size:15px;font-weight:700;text-decoration:underline;cursor:pointer;}
+
+  @keyframes pop{0%{transform:scale(.7);opacity:0;}100%{transform:scale(1);opacity:1;}}
+  @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+  /* 한국식 인사: 허리를 숙였다 펴는 동작 */
+  @keyframes bow{
+    0%,50%,100%{transform:perspective(420px) rotateX(0deg) translateY(0);}
+    68%{transform:perspective(420px) rotateX(48deg) translateY(10px);}
+    84%{transform:perspective(420px) rotateX(0deg) translateY(0);}
+  }
+  @keyframes blink{0%,92%,100%{transform:scaleY(1);}96%{transform:scaleY(.15);}}
+  @keyframes fill{to{width:100%;}}
+
+  /* ===== 홈 화면 ===== */
+  .hero{
+    text-align:center;
+    margin:14px 0 26px;
+    font-size:22px;
+    font-weight:700;
+  }
+  .hero small{display:block;font-size:16px;font-weight:500;color:#000000;margin-top:8px;}
+
+  .big-btn{
+    width:100%;
+    border:none;
+    border-radius:999px;                                  /* 알약(캡슐) 모양 */
+    padding:30px 18px;
+    font-size:29px;
+    font-weight:900;
+    letter-spacing:-.5px;
+    color:#14532d;                                        /* 진한 초록 글씨 (가독성) */
+    background:linear-gradient(135deg,#a7e86f,#63d38a);   /* 연한 초록 */
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 7px 0 #3f9e57, 0 12px 22px rgba(99,211,138,.35);
+    transition:transform .05s;
+  }
+  .big-btn:active{transform:translateY(4px);box-shadow:0 3px 0 #3f9e57, 0 6px 14px rgba(99,211,138,.3);}
+
+  /* 최근 기록 버튼 (메인보다 조금 작게, 연한 파랑) */
+  .history-btn{
+    width:100%;margin-top:14px;border:none;border-radius:999px;
+    padding:18px;font-size:22px;font-weight:800;color:#0c4a6e;
+    background:linear-gradient(135deg,#a8dcff,#7cc4fb);   /* 연한 파랑 */
+    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+    box-shadow:0 5px 0 #3a8fd0, 0 8px 16px rgba(124,196,251,.35);
+    transition:transform .05s;
+  }
+  .history-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #3a8fd0, 0 4px 10px rgba(124,196,251,.3);}
+
+  /* 가족 약 관리 버튼 (연보라) */
+  .family-btn{
+    width:100%;margin-top:14px;border:none;border-radius:999px;
+    padding:18px;font-size:22px;font-weight:800;color:#4c1d95;
+    background:linear-gradient(135deg,#e0c8ff,#b892f0);   /* 연한 보라 */
+    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+    box-shadow:0 5px 0 #7c4bc7, 0 8px 16px rgba(184,146,240,.35);
+    transition:transform .05s;
+  }
+  .family-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #7c4bc7, 0 4px 10px rgba(184,146,240,.3);}
+
+  /* 최근 기록 · 가족 관리 버튼을 나란히 */
+  .sub-row{display:flex;gap:12px;margin-top:14px;}
+  .sub-row .history-btn,
+  .sub-row .family-btn{flex:1;margin-top:0;font-size:18px;padding:18px 8px;gap:6px;}
+
+  /* 가족 화면 */
+  .fam-sub{text-align:center;color:#475569;font-size:15px;margin:-6px 0 18px;line-height:1.5;}
+  .fam-item{
+    width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:16px;
+    padding:16px 18px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;gap:14px;
+  }
+  .fam-item:active{background:var(--soft);}
+  .fam-item .av{width:48px;height:48px;border-radius:50%;background:#ede9fe;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
+  .fam-item .nm{font-size:19px;font-weight:800;}
+  .fam-item .rel{font-size:14px;color:#64748b;margin-top:2px;}
+  .fam-add{background:var(--soft);border-radius:16px;padding:16px;margin-top:6px;}
+  .fam-add input{width:100%;padding:12px;border:2px solid var(--line);border-radius:10px;font-size:16px;margin-bottom:8px;font-family:inherit;}
+  .fam-add .addbtn{width:100%;background:#7c3aed;color:#fff;border:none;border-radius:10px;padding:14px;font-size:17px;font-weight:800;cursor:pointer;}
+  .fam-note{font-size:13px;color:#94a3b8;text-align:center;margin-top:12px;line-height:1.6;}
+  .fam-item .info{flex:1;min-width:0;}
+  .fam-item .med-sum{font-size:14px;color:#334155;font-weight:700;margin-top:4px;}
+  .fam-item .med-sum.none{color:#94a3b8;font-weight:500;}
+  .fam-remove{
+    flex-shrink:0;width:36px;height:36px;border-radius:999px;border:none;
+    background:#fee2e2;color:#b91c1c;font-size:18px;font-weight:900;cursor:pointer;
+  }
+  .fam-remove:active{background:#fecaca;}
+  .fam-call{
+    flex-shrink:0;width:40px;height:40px;border-radius:999px;border:none;
+    background:#dcfce7;color:#166534;font-size:20px;cursor:pointer;
+  }
+  .fam-call:active{background:#bbf7d0;}
+  /* 모두 함께 보기 버튼 */
+  .fam-allbtn{
+    width:100%;border:none;border-radius:14px;padding:14px;margin-bottom:16px;
+    background:#7c3aed;color:#fff;font-size:17px;font-weight:800;cursor:pointer;
+  }
+  .fam-allbtn:active{background:#6d28d9;}
+  /* 모두 함께 보기 화면: 가족별 블록 */
+  .fam-block{margin-bottom:26px;}
+  .fam-head{
+    background:#ede9fe;color:#4c1d95;border-radius:14px;padding:12px 16px;margin-bottom:12px;
+    font-size:18px;font-weight:800;
+  }
+  .fam-head small{display:block;font-size:13px;font-weight:600;color:#6d5aa8;margin-top:2px;}
+
+  /* ===== 하단 아이콘 내비게이션 ===== */
+  .bottom-nav{
+    position:fixed;left:50%;bottom:0;transform:translateX(-50%);
+    width:100%;max-width:460px;
+    background:#fff;border-top:1px solid var(--line);
+    display:flex;z-index:40;padding:8px 0 10px;
+    box-shadow:0 -4px 16px rgba(0,0,0,.06);
+  }
+  body.on-splash .bottom-nav{display:none;}
+  .nav-item{
+    flex:1;background:none;border:none;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    color:#94a3b8;font-size:12px;font-weight:800;padding:4px 0;
+  }
+  .nav-item svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .nav-item.active{color:var(--accent);}
+  .nav-item.sos{color:#dc2626;}          /* SOS는 항상 빨강 (긴급) */
+  .nav-item:active{opacity:.6;}
+
+  /* ===== 복약 알림 페이지 ===== */
+  .alarm-card{background:var(--soft);border:2px solid #e2e8f0;border-radius:16px;padding:14px 16px;margin-bottom:22px;}
+  .alarm-head{display:flex;align-items:center;justify-content:space-between;font-size:17px;font-weight:800;color:#334155;margin-bottom:8px;}
+  .alarm-test{background:#e0e7ff;color:#3730a3;border:none;border-radius:999px;padding:6px 12px;font-size:13px;font-weight:800;cursor:pointer;}
+  .alarm-row{display:flex;align-items:center;gap:10px;padding:8px 0;}
+  .alarm-row .al-label{width:44px;font-size:17px;font-weight:800;color:#334155;}
+  .alarm-row .al-time{flex:1;padding:10px;border:2px solid var(--line);border-radius:10px;font-size:17px;font-family:inherit;}
+  .alarm-row .al-on{width:28px;height:28px;flex-shrink:0;cursor:pointer;}
+
+  .supply-title{font-size:18px;font-weight:800;color:#334155;margin-bottom:12px;}
+  .supply-banner{background:#fef2f2;border:2px solid #fecaca;color:#b91c1c;border-radius:14px;padding:14px;font-size:16px;font-weight:800;text-align:center;margin-bottom:14px;line-height:1.5;}
+  .supply-item{background:#fff;border:2px solid var(--line);border-radius:16px;padding:16px 18px;margin-bottom:12px;}
+  .supply-item.warn{border-color:#fecaca;background:#fef2f2;}
+  .supply-item .s-name{font-size:19px;font-weight:800;}
+  .supply-item .s-info{font-size:14px;color:#64748b;margin-top:3px;}
+  .supply-item .s-badge{display:inline-block;margin-top:10px;border-radius:999px;padding:6px 14px;font-size:15px;font-weight:800;}
+  .s-badge.ok{background:#dcfce7;color:#166534;}
+  .s-badge.soon{background:#fee2e2;color:#b91c1c;}
+  .s-badge.done{background:#e2e8f0;color:#475569;}
+
+  /* 알람 알림 토스트 */
+  .toast{
+    position:fixed;left:50%;bottom:86px;transform:translateX(-50%) translateY(20px);
+    max-width:420px;width:calc(100% - 40px);
+    background:#0f1e3d;color:#fff;border-radius:16px;padding:16px 20px;
+    font-size:18px;font-weight:800;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.3);
+    opacity:0;pointer-events:none;transition:opacity .3s, transform .3s;z-index:60;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* ===== 알람 시계 오버레이 (전체 화면) ===== */
+  .alarm-overlay{
+    position:fixed;left:50%;top:0;transform:translateX(-50%);
+    width:100%;max-width:460px;height:100%;
+    background:#0f1e3d;color:#fff;z-index:100;
+    display:none;flex-direction:column;align-items:center;justify-content:center;
+    gap:18px;padding:30px;text-align:center;
+  }
+  .alarm-overlay.show{display:flex;}
+  .alarm-overlay .clock{font-size:120px;line-height:1;}
+  .alarm-overlay .clock.vibrate{animation:clockVibrate .28s linear infinite;}
+  .alarm-overlay .alarm-msg{font-size:28px;font-weight:900;line-height:1.3;}
+  .alarm-overlay .alarm-time{font-size:22px;font-weight:800;opacity:.85;}
+  .alarm-off{
+    margin-top:22px;background:#dc2626;color:#fff;border:none;border-radius:999px;
+    padding:20px 52px;font-size:24px;font-weight:900;cursor:pointer;box-shadow:0 8px 0 #991b1b;
+  }
+  .alarm-off:active{transform:translateY(3px);box-shadow:0 5px 0 #991b1b;}
+  @keyframes clockVibrate{
+    0%,100%{transform:translate(0,0) rotate(0);}
+    20%{transform:translate(-5px,2px) rotate(-7deg);}
+    40%{transform:translate(5px,-2px) rotate(7deg);}
+    60%{transform:translate(-4px,-2px) rotate(-5deg);}
+    80%{transform:translate(4px,2px) rotate(5deg);}
+  }
+
+  /* ===== 주변 병원 (지도) 화면 ===== */
+  .hosp-status{font-size:16px;font-weight:800;text-align:center;padding:12px;border-radius:12px;margin-bottom:12px;background:#eff6ff;color:var(--accent-dark);}
+  .hosp-status.ok{background:#dcfce7;color:#166534;}
+  .hosp-status.err{background:#fff7ed;color:#9a3412;}
+  .hosp-map{height:240px;border-radius:16px;overflow:hidden;border:2px solid var(--line);background:var(--soft);flex-shrink:0;}
+  .hosp-map iframe{width:100%;height:100%;border:0;display:block;}
+  .hosp-open{margin-top:14px;width:100%;border:none;border-radius:14px;padding:16px;background:var(--accent);color:#fff;font-size:18px;font-weight:800;cursor:pointer;}
+  .hosp-open:active{opacity:.85;}
+
+  /* 가까운 병원 목록 (거리순 + 길찾기) */
+  .hosp-list-title{font-size:16px;font-weight:800;color:#334155;margin:18px 0 10px;}
+  .hosp-item{display:flex;align-items:center;gap:10px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+  .hosp-item.near{border-color:#16a34a;background:#f0fdf4;}
+  .hosp-item .h-info{flex:1;min-width:0;}
+  .hosp-item .h-near{display:inline-block;font-size:12px;font-weight:800;color:#166534;background:#dcfce7;border-radius:999px;padding:3px 9px;margin-bottom:5px;}
+  .hosp-item .h-name{display:block;font-size:17px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .hosp-item .h-dist{font-size:14px;color:#64748b;margin-top:3px;}
+  .hosp-item .h-route{flex-shrink:0;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:12px 14px;font-size:15px;font-weight:800;cursor:pointer;}
+  .hosp-item .h-route:active{opacity:.85;}
+  .hosp-loading{text-align:center;color:#64748b;padding:18px;font-size:15px;line-height:1.6;}
+
+  /* ===== SOS(긴급) 화면 ===== */
+  #sos{align-items:center;text-align:center;}
+  .sos-guide{font-size:18px;font-weight:700;color:#334155;margin:10px 0 30px;line-height:1.6;}
+  .sos-guide b{color:#dc2626;}
+  .sos-hold{
+    width:220px;height:220px;border-radius:50%;
+    border:none;background:radial-gradient(circle at 50% 38%, #ff5a5a, #dc2626);
+    color:#fff;font-size:24px;font-weight:900;cursor:pointer;
+    box-shadow:0 12px 34px rgba(220,38,38,.4);
+    display:flex;align-items:center;justify-content:center;line-height:1.3;
+    user-select:none;-webkit-user-select:none;touch-action:none;transition:transform .1s;
+  }
+  .sos-hold.holding{transform:scale(.96);}
+  .sos-progress{width:220px;max-width:100%;height:10px;background:#fee2e2;border-radius:999px;margin:22px auto 0;overflow:hidden;}
+  .sos-progress .sos-fill{display:block;height:100%;width:0;background:#dc2626;border-radius:999px;transition:width .25s;}
+  .sos-hold.holding ~ .sos-progress .sos-fill{width:100%;transition:width 5s linear;}
+
+  .sos-result{margin-top:24px;width:100%;background:#fff7ed;border:2px solid #fed7aa;border-radius:16px;padding:18px;font-size:16px;font-weight:800;color:#9a3412;}
+  .sos-result.done{background:#f0fdf4;border-color:#bbf7d0;color:#166534;}
+  .sos-done-title{font-size:20px;font-weight:900;margin-bottom:10px;}
+  .sos-loc{font-size:16px;color:#334155;font-weight:700;margin-bottom:6px;line-height:1.5;}
+  .sos-result a{display:block;text-decoration:none;border-radius:12px;padding:14px;font-size:17px;font-weight:800;margin-top:10px;}
+  .sos-result .sos-call{background:#dc2626;color:#fff;}
+  .sos-result .sos-sms{background:#2563eb;color:#fff;}
+  .sos-result .sos-map{background:#fff;color:#166534;border:2px solid #bbf7d0;}
+
+  /* 최근 기록 화면 */
+  .hist-title{font-size:20px;font-weight:800;text-align:center;margin:6px 0 18px;}
+  .hist-empty{text-align:center;color:#64748b;font-size:17px;padding:46px 12px;line-height:1.7;}
+  .hist-item{
+    width:100%;text-align:left;background:#fff;border:2px solid var(--line);border-radius:16px;
+    padding:16px 18px;margin-bottom:12px;cursor:pointer;display:flex;align-items:center;gap:14px;
+  }
+  .hist-item:active{background:var(--soft);}
+  .hist-item .ic{font-size:30px;}
+  .hist-item .who{font-size:19px;font-weight:800;}
+  .hist-item .meta{font-size:14px;color:#64748b;margin-top:2px;}
+
+  /* 홈 그래픽 (시니어 친화: 큰 아이콘·따뜻한 색·단순한 형태) */
+  .home-graphic{display:flex;justify-content:center;margin:4px 0 20px;}
+  .pill-badge{
+    width:132px;height:132px;border-radius:50%;
+    background:radial-gradient(circle at 50% 38%, #fff2e0, #ffdcbc);
+    display:flex;align-items:center;justify-content:center;font-size:66px;
+    box-shadow:0 12px 26px rgba(249,89,30,.18);
+    position:relative;animation:pill-spin 5s linear infinite;  /* 5초마다 두 바퀴 회전 */
+  }
+  @keyframes pill-spin{
+    0%{transform:translateY(0) rotate(0deg);}
+    25%{transform:translateY(-8px) rotate(180deg);}
+    50%{transform:translateY(0) rotate(360deg);}
+    75%{transform:translateY(-8px) rotate(540deg);}
+    100%{transform:translateY(0) rotate(720deg);}
+  }
+  .pill-badge::before{content:"✨";position:absolute;top:6px;right:12px;font-size:22px;}
+  .pill-badge::after{content:"✨";position:absolute;bottom:14px;left:10px;font-size:15px;opacity:.8;}
+
+  .hint{
+    margin-top:18px;
+    background:var(--soft);
+    border-radius:16px;
+    padding:16px;
+    font-size:16px;
+    color:#475569;
+    text-align:center;
+  }
+
+  /* ===== 로딩 화면 ===== */
+  .loading-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center;}
+  .spinner{
+    width:74px;height:74px;border-radius:50%;
+    border:9px solid #dbeafe;border-top-color:var(--accent);
+    animation:spin 1s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-text{font-size:24px;font-weight:800;}
+  .loading-sub{font-size:16px;color:#64748b;}
+  #preview{max-width:220px;border-radius:14px;border:1px solid var(--line);display:none;}
+
+  /* ===== 결과 화면 ===== */
+  .patient{
+    background:#0f1e3d;color:#fff;border-radius:16px;
+    padding:16px 18px;margin-bottom:14px;
+  }
+  .patient .who{font-size:22px;font-weight:900;}
+  .patient .row{font-size:15px;opacity:.92;margin-top:6px;display:flex;align-items:center;gap:8px;}
+  .patient .row b{font-weight:800;}
+
+  .dose-summary{
+    text-align:center;font-size:18px;font-weight:800;color:#9a3412;
+    background:#fff7ed;border:2px solid #fed7aa;border-radius:14px;padding:14px;margin-bottom:14px;
+  }
+  .med-count{
+    text-align:center;font-size:19px;font-weight:800;color:var(--accent-dark);
+    background:#eff6ff;border-radius:14px;padding:12px;margin-bottom:16px;
+  }
+  .freq{
+    display:inline-block;background:#fef3c7;color:#92400e;font-weight:800;
+    border-radius:999px;padding:5px 14px;font-size:15px;margin-bottom:10px;
+  }
+  .med{margin-bottom:26px;}
+  .med:last-child{margin-bottom:0;}
+  .med-index{
+    display:inline-block;font-size:15px;font-weight:800;color:#fff;
+    background:var(--accent);border-radius:999px;padding:4px 12px;margin-bottom:8px;
+  }
+  .result-name{
+    font-size:28px;font-weight:900;text-align:center;
+    padding:16px;background:#eff6ff;border-radius:18px;color:var(--accent-dark);
+    margin-bottom:14px;
+  }
+  .card{
+    border:2px solid var(--line);
+    border-radius:18px;
+    padding:16px 18px;
+    margin-bottom:14px;
+  }
+  .card .label{font-size:16px;color:#64748b;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+  .card .value{font-size:24px;font-weight:800;}
+  .card.warn{border-color:#fecaca;background:#fef2f2;}
+  .card.warn .label{color:var(--warn);}
+  .card.warn .value{color:var(--warn);}
+
+  .btn-row{margin-top:24px;display:flex;flex-direction:column;gap:12px;padding-top:18px;}
+  .btn{
+    width:100%;border:none;border-radius:18px;padding:20px;
+    font-size:22px;font-weight:800;cursor:pointer;
+  }
+  .listen-row{display:flex;gap:12px;}
+  .listen-row .btn{flex:1;}
+  .btn-listen{background:#16a34a;color:#fff;box-shadow:0 5px 0 #15803d;}
+  .btn-listen:active{transform:translateY(2px);box-shadow:0 3px 0 #15803d;}
+  .btn-stop{background:#64748b;color:#fff;box-shadow:0 5px 0 #475569;}
+  .btn-stop:active{transform:translateY(2px);box-shadow:0 3px 0 #475569;}
+  .btn-again{background:#fff;color:var(--accent);border:3px solid var(--accent);}
+  .btn-again:active{background:var(--soft);}
+
+  .speaking{animation:pulse 1s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.6;}}
+
+  .disclaimer{margin-top:16px;font-size:13px;color:#94a3b8;text-align:center;line-height:1.6;}
+</style>
+</head>
+<body class="on-splash">
+<div class="phone">
+  <header>
+    <button id="backBtn">← 뒤로</button>
+    <div class="title">💊 약손</div>
+    <div class="sub">약을 챙기는 따뜻한 약속</div>
+  </header>
+
+  <!-- ========== 0. 시작(스플래시) 화면 ========== -->
+  <section id="splash" class="screen active">
+    <div class="bubble">안녕하세요! 👋<br>오늘은 무엇을 읽어드릴까요?</div>
+    <div class="figure-wrap">
+      <div class="person">
+        <div class="upper">
+          <div class="head"><span class="hair"></span><span class="face"></span></div>
+          <div class="torso"><span class="arm left"></span><span class="arm right"></span></div>
+        </div>
+        <div class="lower"></div>
+      </div>
+    </div>
+    <div class="slogan">약속하는 <b>약손</b></div>
+    <div class="splash-title">약봉투를 찍으면 큰 글씨와 목소리로 읽어드려요</div>
+    <div class="splash-progress"><span></span></div>
+    <button class="skip-btn" id="startBtn">바로 시작 →</button>
+  </section>
+
+  <!-- ========== 1. 홈 화면 ========== -->
+  <section id="home" class="screen">
+    <div class="hero">
+      약봉투를 찍어보세요
+      <small>작은 글씨도 차분히 읽어드릴게요</small>
+    </div>
+
+    <!-- 시니어 친화 그래픽: 크고 따뜻한 약 배지 -->
+    <div class="home-graphic">
+      <div class="pill-badge">💊</div>
+    </div>
+
+    <button class="big-btn" id="captureBtn">약봉투 찍기</button>
+    <div class="sub-row">
+      <button class="history-btn" id="historyBtn">🕘 최근 기록</button>
+      <button class="family-btn" id="familyBtn">👨‍👩‍👧‍👦 가족 관리</button>
+    </div>
+    <!-- 스마트폰이면 카메라, PC면 파일 선택이 열립니다 -->
+    <input type="file" id="fileInput" accept="image/*" capture="environment" hidden />
+
+    <div class="hint">버튼을 누르면 카메라가 켜집니다.<br>약봉투 글씨가 잘 보이게 비춰 주세요.</div>
+  </section>
+
+  <!-- ========== 2. 로딩 화면 ========== -->
+  <section id="loading" class="screen">
+    <div class="loading-wrap">
+      <img id="preview" alt="찍은 사진" />
+      <div class="spinner"></div>
+      <div class="loading-text">읽는 중이에요…</div>
+      <div class="loading-sub" id="loadingSub">약봉투를 읽고 있어요</div>
+    </div>
+  </section>
+
+  <!-- ========== 3. 결과 화면 ========== -->
+  <section id="result" class="screen">
+    <div id="patientInfo" class="patient" style="display:none;"></div>
+    <div id="doseSummary" class="dose-summary" style="display:none;"></div>
+    <div id="medCount" class="med-count" style="display:none;"></div>
+    <!-- 약 카드들이 여기에 자동으로 채워집니다 -->
+    <div id="medList"></div>
+
+    <div class="btn-row">
+      <div class="listen-row">
+        <button class="btn btn-listen" id="listenBtn">🔊 다시 듣기</button>
+        <button class="btn btn-stop" id="stopBtn">⏹ 멈추기</button>
+      </div>
+      <button class="btn btn-again" id="againBtn">📷 새로 찍기</button>
+    </div>
+    <div class="disclaimer">
+      이 앱은 약 정보를 쉽게 안내할 뿐, 의학적 진단을 하지 않습니다.<br>
+      정확한 복용은 의사·약사와 상의하세요.
+    </div>
+  </section>
+
+  <!-- ========== 4. 최근 기록 화면 ========== -->
+  <section id="history" class="screen">
+    <div class="hist-title">🕘 최근에 찍은 약</div>
+    <div id="histList"></div>
+  </section>
+
+  <!-- ========== 5. 가족 약 관리 화면 ========== -->
+  <section id="family" class="screen">
+    <div class="hist-title">👨‍👩‍👧‍👦 가족 약 관리</div>
+    <div class="fam-sub">가족으로 등록하면 서로의 약 기록을<br>함께 챙길 수 있어요 (최대 5명)</div>
+    <button class="fam-allbtn" id="famAllBtn" style="display:none;">📋 모두 함께 보기</button>
+    <div id="famList"></div>
+    <div class="fam-add" id="famAdd">
+      <input id="famName" type="text" placeholder="이름 (예: 김순자)" maxlength="12" />
+      <input id="famRel" type="text" placeholder="관계 (예: 어머니)" maxlength="10" />
+      <input id="famTel" type="tel" placeholder="전화번호 (예: 010-1234-5678)" maxlength="20" />
+      <button class="addbtn" id="famAddBtn">＋ 가족 추가하기</button>
+    </div>
+    <div class="fam-note" id="famNote"></div>
+  </section>
+
+  <!-- ========== 6. 가족 약 모두 함께 보기 ========== -->
+  <section id="familyAll" class="screen">
+    <div class="hist-title">👨‍👩‍👧‍👦 우리 가족 약 한눈에</div>
+    <div id="famAllList"></div>
+  </section>
+
+  <!-- ========== 7. 복약 알림 화면 ========== -->
+  <section id="remind" class="screen">
+    <div class="hist-title">⏰ 복약 알림</div>
+
+    <!-- 아침·낮·저녁 알람 -->
+    <div class="alarm-card">
+      <div class="alarm-head"><span>🔔 알람 시간</span><button class="alarm-test" id="alarmTest">🔔 미리듣기</button></div>
+      <div class="alarm-row" data-key="morning">
+        <span class="al-label">아침</span>
+        <input type="time" class="al-time" value="08:00" />
+        <input type="checkbox" class="al-on" />
+      </div>
+      <div class="alarm-row" data-key="lunch">
+        <span class="al-label">낮</span>
+        <input type="time" class="al-time" value="13:00" />
+        <input type="checkbox" class="al-on" />
+      </div>
+      <div class="alarm-row" data-key="evening">
+        <span class="al-label">저녁</span>
+        <input type="time" class="al-time" value="19:00" />
+        <input type="checkbox" class="al-on" />
+      </div>
+    </div>
+
+    <!-- 약 소진 알림 (이름별 저장된 데이터 기준) -->
+    <div class="supply-title">💊 약이 며칠 남았나요?</div>
+    <div id="supplyList"></div>
+  </section>
+
+  <!-- ========== 8. 주변 병원 (지도) 화면 ========== -->
+  <section id="hospital" class="screen">
+    <div class="hist-title">🏥 주변 병원</div>
+    <div id="hospStatus" class="hosp-status">현재 위치를 찾는 중이에요…</div>
+    <div id="hospMap" class="hosp-map"></div>
+    <div id="hospList"></div>
+    <button class="hosp-open" id="hospOpen">🗺️ 지도 앱에서 크게 보기</button>
+  </section>
+
+  <!-- ========== 9. SOS(긴급) 화면 ========== -->
+  <section id="sos" class="screen">
+    <div class="hist-title">🆘 긴급 도움 요청</div>
+    <div class="sos-guide">아래 버튼을 <b>5초 동안</b> 꾹 누르면<br>119에 <b>현재 위치</b>와 함께 도움을 요청해요</div>
+    <button class="sos-hold" id="sosHold">
+      <span class="sos-label" id="sosLabel">5초간<br>꾹 누르세요</span>
+    </button>
+    <div class="sos-progress"><span class="sos-fill"></span></div>
+    <div id="sosResult" class="sos-result" style="display:none;"></div>
+  </section>
+
+  <!-- ========== 하단 아이콘 내비게이션 ========== -->
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="nav-item active" data-nav="home">
+      <svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+      <span>홈</span>
+    </button>
+    <button class="nav-item" data-nav="remind">
+      <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9z"/><path d="M9.5 21a2.5 2.5 0 005 0"/></svg>
+      <span>복약알림</span>
+    </button>
+    <button class="nav-item" data-nav="hospital">
+      <svg viewBox="0 0 24 24"><path d="M12 21s7-5.6 7-11a7 7 0 10-14 0c0 5.4 7 11 7 11z"/><path d="M12 6.5v5M9.5 9h5"/></svg>
+      <span>주변병원</span>
+    </button>
+    <button class="nav-item sos" data-nav="sos">
+      <svg viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg>
+      <span>SOS</span>
+    </button>
+  </nav>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- 알람 시계 오버레이 (알림 시간에 전체 화면으로 뜸) -->
+  <div id="alarmOverlay" class="alarm-overlay">
+    <div class="clock">⏰</div>
+    <div class="alarm-msg" id="alarmMsg">약 드실 시간이에요</div>
+    <div class="alarm-time" id="alarmTime"></div>
+    <button class="alarm-off" id="alarmOff">알람 끄기</button>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   아이디어 시연용(목업) — 어떤 약봉투 사진을 올려도
+   아래 정해진 결과를 보여줍니다. (실제 인식은 하지 않음)
+========================================================= */
+const PATIENT = {
+  name:"김지연",
+  from:"2026-07-08",
+  to:"2026-07-11",
+  days:"3일간",
+  clinic:"서울아산정형외과"
+};
+
+const FIXED_MEDS = [
+  {
+    name:"대우세파클러캡슐 (항생제)",
+    times:3, days:3,
+    effect:"세균 감염을 치료하는 항생제예요.",
+    dose:"하루 3번, 한 번에 1알씩, 3일간 드세요.",
+    warn:"3일간 끝까지 다 드세요. 빛을 피해 실온에 보관하세요."
+  },
+  {
+    name:"에이펜정 (소염진통제)",
+    times:2, days:3,
+    effect:"염증을 가라앉히고 통증을 줄여주는 약이에요.",
+    dose:"하루 2번, 한 번에 1알씩, 3일간 드세요.",
+    warn:"임신 중이면 드시면 안 돼요. 속이 쓰릴 수 있으니 식사 후에 드세요."
+  },
+  {
+    name:"대우에페리손정 (근육 이완제)",
+    times:2, days:3,
+    effect:"뭉치고 굳은 근육을 풀어주는 약이에요.",
+    dose:"하루 2번, 한 번에 1알씩, 3일간 드세요.",
+    warn:"졸리거나 어지러울 수 있어요. 운전은 피하세요."
+  },
+  {
+    name:"레파드린정 (위 보호제)",
+    times:2, days:3,
+    effect:"위를 보호하고 상한 위벽의 회복을 도와주는 약이에요.",
+    dose:"하루 2번, 한 번에 1알씩, 3일간 드세요.",
+    warn:"빛을 피해 실온에 보관하세요. 특별한 주의사항은 없어요."
+  }
+];
+
+/* ===== 화면 전환 도우미 ===== */
+function byId(id){ return document.getElementById(id); }
+const screens = { splash:byId("splash"), home:byId("home"), loading:byId("loading"), result:byId("result"), history:byId("history"), family:byId("family"), familyAll:byId("familyAll"), remind:byId("remind"), hospital:byId("hospital"), sos:byId("sos") };
+function show(name){
+  Object.values(screens).forEach(s=>s.classList.remove("active"));
+  screens[name].classList.add("active");
+  // 뒤로가기 버튼은 시작·홈이 아닌 화면에서만 표시
+  document.body.classList.toggle("not-home", name !== "splash" && name !== "home");
+  // 하단 내비게이션은 시작 화면에서는 숨김
+  document.body.classList.toggle("on-splash", name === "splash");
+  const navKey = (name === "remind" || name === "hospital" || name === "sos") ? name : "home";
+  setNavActive(navKey);
+}
+function setNavActive(key){
+  document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("active", b.dataset.nav === key));
+}
+
+/* ===== 하단 내비게이션 동작 ===== */
+function onNav(key){
+  if(key === "home"){ stopSpeak(); show("home"); }
+  else if(key === "remind"){ stopSpeak(); renderRemind(); show("remind"); }
+  else if(key === "hospital"){ stopSpeak(); openHospital(); }
+  else if(key === "sos"){ stopSpeak(); resetSos(); show("sos"); }
+}
+document.querySelectorAll(".nav-item").forEach(b=>{
+  b.addEventListener("click", ()=> onNav(b.dataset.nav));
+});
+
+/* ===== 주변 병원: GPS 현재 위치 → 지도에 병원 표시 ===== */
+function openHospital(){
+  show("hospital");
+  const status = byId("hospStatus");
+  byId("hospMap").innerHTML = "";
+  byId("hospList").innerHTML = "";
+  status.className = "hosp-status";
+  status.textContent = "현재 위치를 찾는 중이에요…";
+
+  if(!navigator.geolocation){ hospFallback("이 기기는 위치 기능을 지원하지 않아요."); return; }
+
+  navigator.geolocation.getCurrentPosition(
+    pos=>{
+      const lat = pos.coords.latitude, lng = pos.coords.longitude;
+      status.className = "hosp-status ok";
+      status.textContent = "📍 현재 위치 주변 병원이에요";
+      const src = `https://maps.google.com/maps?q=${encodeURIComponent("병원")}&ll=${lat},${lng}&z=15&hl=ko&output=embed`;
+      byId("hospMap").innerHTML = `<iframe src="${src}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>`;
+      byId("hospOpen").onclick = ()=> window.open(`https://www.google.com/maps/search/병원/@${lat},${lng},15z`, "_blank");
+      findNearbyHospitals(lat, lng);   // 가까운 병원 거리순 + 길찾기
+    },
+    ()=> hospFallback("위치 권한이 꺼져 있어요. 지도에서 직접 찾아보세요."),
+    { enableHighAccuracy:true, timeout:10000, maximumAge:60000 }
+  );
+}
+function hospFallback(msg){
+  const status = byId("hospStatus");
+  status.className = "hosp-status err";
+  status.textContent = "⚠️ " + msg;
+  byId("hospMap").innerHTML = `<iframe src="https://maps.google.com/maps?q=${encodeURIComponent("내 주변 병원")}&z=13&hl=ko&output=embed" loading="lazy"></iframe>`;
+  byId("hospList").innerHTML = `<div class="hosp-loading">위치를 켜면 가장 가까운 병원을<br>거리순으로 알려드려요.</div>`;
+  byId("hospOpen").onclick = ()=> window.open("https://www.google.com/maps/search/내 주변 병원", "_blank");
+}
+
+/* 두 좌표 사이 거리(m) — 하버사인 */
+function distM(aLat,aLng,bLat,bLng){
+  const R=6371000, rad=x=>x*Math.PI/180;
+  const dLat=rad(bLat-aLat), dLng=rad(bLng-aLng);
+  const s=Math.sin(dLat/2)**2 + Math.cos(rad(aLat))*Math.cos(rad(bLat))*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(s));
+}
+function fmtDist(m){ return m < 1000 ? `${Math.round(m)}m` : `${(m/1000).toFixed(1)}km`; }
+
+/* 현재 위치 주변 병원을 OpenStreetMap(Overpass)에서 찾아 거리순 정렬 */
+async function findNearbyHospitals(lat, lng){
+  const list = byId("hospList");
+  list.innerHTML = `<div class="hosp-loading">가장 가까운 병원을 찾는 중이에요…</div>`;
+  const q = `[out:json][timeout:15];(node["amenity"~"^(hospital|clinic|doctors)$"](around:2500,${lat},${lng});way["amenity"~"^(hospital|clinic|doctors)$"](around:2500,${lat},${lng}););out center 40;`;
+  try{
+    const ctrl = new AbortController();
+    const timer = setTimeout(()=>ctrl.abort(), 12000);
+    const res = await fetch("https://overpass-api.de/api/interpreter", {
+      method:"POST", body:"data="+encodeURIComponent(q), signal:ctrl.signal
+    });
+    clearTimeout(timer);
+    if(!res.ok) throw new Error("http " + res.status);
+    const data = await res.json();
+    let items = (data.elements||[]).map(el=>{
+      const p = el.type === "node" ? { lat:el.lat, lng:el.lon }
+              : (el.center ? { lat:el.center.lat, lng:el.center.lon } : null);
+      if(!p) return null;
+      const name = (el.tags && el.tags.name) || "이름 미상 병원";
+      return { name, lat:p.lat, lng:p.lng, d:distM(lat,lng,p.lat,p.lng) };
+    }).filter(Boolean);
+    items.sort((a,b)=> a.d - b.d);
+    renderHospList(items.slice(0,6), lat, lng);
+  }catch(_){
+    list.innerHTML = `<div class="hosp-loading">주변 병원 목록을 불러오지 못했어요.<br>위 지도에서 확인해 주세요.</div>`;
+  }
+}
+function renderHospList(items, lat, lng){
+  const list = byId("hospList");
+  if(!items.length){ list.innerHTML = `<div class="hosp-loading">주변에 등록된 병원이 없어요.</div>`; return; }
+  list.innerHTML = `<div class="hosp-list-title">📍 가까운 순서예요</div>` + items.map((h,i)=>`
+    <div class="hosp-item ${i===0?"near":""}">
+      <div class="h-info">
+        ${i===0?'<span class="h-near">가장 가까움</span>':''}
+        <span class="h-name">${esc(h.name)}</span>
+        <div class="h-dist">📍 ${fmtDist(h.d)}</div>
+      </div>
+      <button class="h-route" data-lat="${h.lat}" data-lng="${h.lng}">🧭 길찾기</button>
+    </div>`).join("");
+  list.querySelectorAll(".h-route").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const url = `https://www.google.com/maps/dir/?api=1&origin=${lat},${lng}&destination=${btn.dataset.lat},${btn.dataset.lng}`;
+      window.open(url, "_blank");
+    });
+  });
+}
+
+/* ===== SOS: 5초 이상 꾹 누르면 현재 위치와 함께 119에 긴급 요청 ===== */
+let sosTimer = null, sosCountTimer = null, sosFired = false;
+let audioCtx = null, beepTimer = null;
+
+/* 누르는 동안 '삐-삐-삐' 경고음 (Web Audio) */
+function beepOnce(){
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === "suspended") audioCtx.resume();
+    const t = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    osc.type = "square";
+    osc.frequency.value = 880;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(0.3, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+    osc.connect(g).connect(audioCtx.destination);
+    osc.start(t); osc.stop(t + 0.18);
+  }catch(_){}
+}
+function startBeep(){ stopBeep(); beepOnce(); beepTimer = setInterval(beepOnce, 600); }
+function stopBeep(){ if(beepTimer){ clearInterval(beepTimer); beepTimer = null; } }
+
+/* 앰뷸런스 사이렌 (SOS 버튼 누르는 동안) */
+let sirenNodes = null;
+function startSiren(){
+  stopSiren();
+  try{
+    if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === "suspended") audioCtx.resume();
+    const osc = audioCtx.createOscillator();      // 메인 톤
+    const gain = audioCtx.createGain();
+    const lfo = audioCtx.createOscillator();       // 음정을 위아래로 흔들어 사이렌처럼
+    const lfoGain = audioCtx.createGain();
+    osc.type = "sawtooth";
+    osc.frequency.value = 800;
+    lfo.type = "sine";
+    lfo.frequency.value = 1.3;                     // 사이렌 왕복 속도
+    lfoGain.gain.value = 220;                      // 약 580~1020Hz 사이를 오르내림
+    lfo.connect(lfoGain).connect(osc.frequency);
+    gain.gain.value = 0.18;                        // 음량
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(); lfo.start();
+    sirenNodes = { osc, lfo, gain };
+  }catch(_){}
+}
+function stopSiren(){
+  if(sirenNodes){
+    try{ sirenNodes.osc.stop(); sirenNodes.lfo.stop(); }catch(_){}
+    try{ sirenNodes.osc.disconnect(); sirenNodes.lfo.disconnect(); sirenNodes.gain.disconnect(); }catch(_){}
+    sirenNodes = null;
+  }
+}
+
+function resetSos(){
+  sosStop(false);
+  sosFired = false;
+  const r = byId("sosResult"); r.style.display = "none"; r.innerHTML = "";
+  byId("sosLabel").innerHTML = "5초간<br>꾹 누르세요";
+}
+function sosStart(){
+  if(sosFired) return;
+  byId("sosHold").classList.add("holding");
+  startSiren();   // 누르는 동안 앰뷸런스 사이렌
+  let remain = 5;
+  byId("sosLabel").innerHTML = `${remain}초…<br>손 떼지 마세요`;
+  sosCountTimer = setInterval(()=>{
+    remain--;
+    if(remain > 0) byId("sosLabel").innerHTML = `${remain}초…<br>손 떼지 마세요`;
+  }, 1000);
+  sosTimer = setTimeout(()=>{ sosStop(true); fireSOS(); }, 5000);
+}
+function sosStop(done){
+  clearTimeout(sosTimer); clearInterval(sosCountTimer);
+  sosTimer = null; sosCountTimer = null;
+  stopSiren();   // 사이렌 멈춤 (손 떼거나 발동 시)
+  byId("sosHold").classList.remove("holding");
+  if(!done && !sosFired) byId("sosLabel").innerHTML = "5초간<br>꾹 누르세요";
+}
+function fireSOS(){
+  sosFired = true;
+  byId("sosLabel").innerHTML = "요청 중…";
+  const result = byId("sosResult");
+  result.style.display = "block";
+  result.className = "sos-result";
+  result.innerHTML = "📡 현재 위치를 확인하는 중이에요…";
+
+  const finish = (locText, mapUrl, smsHref)=>{
+    result.className = "sos-result done";
+    result.innerHTML = `
+      <div class="sos-done-title">🆘 119에 긴급 요청을 보냈어요</div>
+      <div class="sos-loc">${locText}</div>
+      <a class="sos-call" href="tel:119">📞 119 전화 걸기</a>
+      <a class="sos-sms" href="${smsHref}">✉️ 119에 위치 문자 보내기</a>
+      ${mapUrl ? `<a class="sos-map" href="${mapUrl}" target="_blank" rel="noopener">🗺️ 내 위치 지도로 보기</a>` : ""}`;
+    byId("sosLabel").innerHTML = "전송 완료";
+    speak("119에 긴급 요청을 보냈어요. 곧 도움이 도착합니다.");
+    setTimeout(()=>{ location.href = "tel:119"; }, 1000);  // 전화 연결 시도(휴대폰)
+  };
+
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      pos=>{
+        const lat = pos.coords.latitude.toFixed(6), lng = pos.coords.longitude.toFixed(6);
+        const mapUrl = `https://maps.google.com/?q=${lat},${lng}`;
+        const sms = `sms:119?body=${encodeURIComponent(`[긴급] 도움이 필요합니다. 제 위치: ${mapUrl}`)}`;
+        finish(`📍 현재 위치<br>위도 ${lat}, 경도 ${lng}`, mapUrl, sms);
+      },
+      ()=> finish("⚠️ 위치를 확인하지 못했어요.<br>통화로 위치를 알려주세요.", "", `sms:119?body=${encodeURIComponent("[긴급] 도움이 필요합니다.")}`),
+      { enableHighAccuracy:true, timeout:8000 }
+    );
+  }else{
+    finish("⚠️ 위치 기능이 없어요.<br>통화로 위치를 알려주세요.", "", `sms:119?body=${encodeURIComponent("[긴급] 도움이 필요합니다.")}`);
+  }
+}
+
+(function wireSos(){
+  const btn = byId("sosHold");
+  btn.addEventListener("pointerdown", e=>{ e.preventDefault(); sosStart(); });
+  ["pointerup","pointerleave","pointercancel"].forEach(ev=> btn.addEventListener(ev, ()=> sosStop(false)));
+  btn.addEventListener("contextmenu", e=> e.preventDefault());
+})();
+
+/* ===== 시작(웰컴) 화면: 10초 인사 + 음성 후 홈으로 ===== */
+const GREETING = "안녕하세요! 오늘은 무엇을 읽어드릴까요?";
+let splashTimer = null, greeted = false;
+
+function speak(text){
+  if(!("speechSynthesis" in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "ko-KR"; u.rate = 0.95; u.pitch = 1.0;
+    window.speechSynthesis.speak(u);
+  }catch(_){}
+}
+function greet(){ if(greeted) return; greeted = true; speak(GREETING); }
+
+function goHomeFromSplash(){
+  clearTimeout(splashTimer);
+  if("speechSynthesis" in window) window.speechSynthesis.cancel();
+  show("home");
+}
+function startWelcome(){
+  greet();                                   // 열자마자 인사 음성 시도
+  splashTimer = setTimeout(goHomeFromSplash, 5000);  // 5초 후 자동으로 홈
+}
+// 브라우저가 자동재생을 막으면, 첫 클릭/터치 때 인사 음성이 나오도록
+window.addEventListener("pointerdown", greet, { once:true });
+window.addEventListener("keydown", greet, { once:true });
+
+/* ===== 버튼 연결 ===== */
+byId("startBtn").addEventListener("click", goHomeFromSplash);  // '바로 시작' = 건너뛰기
+byId("captureBtn").addEventListener("click", ()=> byId("fileInput").click());
+byId("fileInput").addEventListener("change", onPhotoChosen);
+byId("againBtn").addEventListener("click", ()=>{ stopSpeak(); show("home"); });
+byId("backBtn").addEventListener("click", ()=>{ stopSpeak(); show("home"); });
+byId("listenBtn").addEventListener("click", ()=> speakCurrent());
+byId("stopBtn").addEventListener("click", ()=> stopSpeak());
+byId("historyBtn").addEventListener("click", ()=>{ renderHistory(); show("history"); });
+byId("familyBtn").addEventListener("click", ()=>{ renderFamily(); show("family"); });
+byId("famAddBtn").addEventListener("click", onAddFamily);
+byId("famAllBtn").addEventListener("click", ()=>{ renderFamilyAll(); show("familyAll"); });
+
+let currentMeds = [];
+let currentPatient = PATIENT;
+
+/* ===== 가족 약 관리 (이 브라우저에 저장, 최대 5명) ===== */
+const FAMILY_STORE = "family_members";
+const FAMILY_MAX = 5;
+
+/* 가족마다 서로 다른 예시 처방 — 이름에 따라 각자 다른 기록을 갖도록 */
+const SAMPLE_RECORDS = [
+  { clinic:"서울아산정형외과", from:"2026-07-08", to:"2026-07-11", days:"3일간", meds:FIXED_MEDS },
+  { clinic:"행복내과의원", from:"2026-07-01", to:"2026-07-30", days:"30일간", meds:[
+      { name:"암로디핀정 (혈압약)", times:1, days:30, effect:"혈압을 낮춰주는 약이에요.", dose:"하루 1번, 아침에 1알씩 드세요.", warn:"어지러울 수 있어요. 갑자기 일어나지 마세요." },
+      { name:"메트포르민정 (당뇨약)", times:2, days:30, effect:"혈당(피 속 당)을 낮춰주는 약이에요.", dose:"하루 2번, 아침·저녁 식사 후 1알씩 드세요.", warn:"속이 메스꺼울 수 있어요. 식사를 거르지 마세요." }
+    ]},
+  { clinic:"튼튼이비인후과", from:"2026-07-05", to:"2026-07-08", days:"3일간", meds:[
+      { name:"타이레놀정 (해열진통제)", times:3, days:3, effect:"열을 내리고 통증을 줄여주는 약이에요.", dose:"하루 3번, 식사 후 1알씩, 3일간 드세요.", warn:"정해진 양보다 많이 드시면 안 돼요." },
+      { name:"지르텍정 (알레르기약)", times:1, days:3, effect:"콧물과 재채기를 줄여주는 약이에요.", dose:"하루 1번, 저녁에 1알 드세요.", warn:"졸릴 수 있어요. 운전은 피하세요." }
+    ]}
+];
+function medMaxTimes(meds){ const t=(meds||[]).map(m=>m.times||0).filter(Boolean); return t.length?Math.max(...t):0; }
+
+function loadFamily(){
+  try{ return JSON.parse(localStorage.getItem(FAMILY_STORE) || "[]"); }catch(_){ return []; }
+}
+function saveFamily(list){ localStorage.setItem(FAMILY_STORE, JSON.stringify(list)); }
+
+function onAddFamily(){
+  const list = loadFamily();
+  if(list.length >= FAMILY_MAX) return;
+  const name = byId("famName").value.trim();
+  const rel  = byId("famRel").value.trim();
+  const tel  = byId("famTel").value.trim();
+  if(!name){ byId("famName").focus(); return; }
+  // 가족마다 서로 다른 예시 기록 부여 (모두 같은 데이터가 되지 않도록)
+  const s = SAMPLE_RECORDS[list.length % SAMPLE_RECORDS.length];
+  let at=""; try{ at=new Date().toLocaleDateString("ko-KR",{month:"long",day:"numeric"}); }catch(_){}
+  list.push({
+    id:String(Date.now()), name:name, rel:rel, tel:tel,
+    meds:s.meds,
+    patient:{ name:name, from:s.from, to:s.to, days:s.days, clinic:s.clinic },
+    at:at
+  });
+  saveFamily(list);
+  byId("famName").value = ""; byId("famRel").value = ""; byId("famTel").value = "";
+  renderFamily();
+}
+
+function removeFamily(id){
+  saveFamily(loadFamily().filter(m=>m.id !== id));
+  renderFamily();
+}
+
+function renderFamily(){
+  const list = loadFamily();
+  const wrap = byId("famList");
+  wrap.innerHTML = list.length
+    ? list.map(m=>{
+        const meds = m.meds || [];
+        const sum = meds.length
+          ? `<div class="med-sum">💊 약 ${meds.length}개 · 하루 최대 ${medMaxTimes(meds)}번</div>`
+          : `<div class="med-sum none">약 기록 없음</div>`;
+        const relLine = esc(m.rel || "가족") + (m.tel ? ` · ${esc(m.tel)}` : "");
+        const callBtn = m.tel ? `<button class="fam-call" data-tel="${esc(m.tel)}" aria-label="전화">📞</button>` : "";
+        return `<div class="fam-item" data-id="${esc(m.id)}">
+          <div class="av">🧑</div>
+          <div class="info">
+            <div class="nm">${esc(m.name)} 님</div>
+            <div class="rel">${relLine}</div>
+            ${sum}
+          </div>
+          ${callBtn}
+          <button class="fam-remove" data-remove="${esc(m.id)}" aria-label="삭제">✕</button>
+        </div>`;
+      }).join("")
+    : `<div class="hist-empty">아직 등록된 가족이 없어요.<br>아래에서 가족을 추가해보세요.</div>`;
+
+  // 카드 탭 → 그 가족의 약 기록 보기 (각자 다른 데이터)
+  wrap.querySelectorAll(".fam-item").forEach(el=>{
+    el.addEventListener("click", (e)=>{
+      if(e.target.closest(".fam-remove")) return;
+      const m = loadFamily().find(x=>x.id === el.dataset.id);
+      if(m && m.meds && m.meds.length) showMedicines(m.meds, m.patient || { name:m.name });
+    });
+  });
+  // 📞 → 전화 걸기
+  wrap.querySelectorAll(".fam-call").forEach(btn=>{
+    btn.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      location.href = `tel:${btn.dataset.tel}`;
+    });
+  });
+  // ✕ → 가족 삭제
+  wrap.querySelectorAll(".fam-remove").forEach(btn=>{
+    btn.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      const m = loadFamily().find(x=>x.id === btn.dataset.remove);
+      if(m && confirm(`${m.name} 님을 가족에서 삭제할까요?`)) removeFamily(btn.dataset.remove);
+    });
+  });
+
+  // '모두 함께 보기' 버튼 + 추가 폼/안내 상태
+  byId("famAllBtn").style.display = list.length ? "block" : "none";
+  const full = list.length >= FAMILY_MAX;
+  byId("famAdd").style.display = full ? "none" : "block";
+  byId("famNote").textContent = full ? "최대 5명까지 등록할 수 있어요." : `${list.length}/5명 등록됨`;
+}
+
+/* 가족 모두의 약을 한 화면에서 함께 보기 (여러 앱의 기록을 동시에) */
+function renderFamilyAll(){
+  const list = loadFamily();
+  const wrap = byId("famAllList");
+  if(!list.length){ wrap.innerHTML = `<div class="hist-empty">등록된 가족이 없어요.</div>`; return; }
+  wrap.innerHTML = list.map(m=>{
+    const meds = m.meds || [];
+    const clinic = (m.patient && m.patient.clinic) ? " · " + esc(m.patient.clinic) : "";
+    const head = `<div class="fam-head">${esc(m.name)} 님 <small>${esc(m.rel || "가족")}${clinic}</small></div>`;
+    const cards = meds.length
+      ? meds.map((x,i)=>medCardHTML(x,i,meds.length)).join("")
+      : `<div class="hist-empty">약 기록 없음</div>`;
+    return `<div class="fam-block">${head}${cards}</div>`;
+  }).join("");
+}
+
+/* ===== 최근 기록 (이 브라우저에 저장) ===== */
+const HISTORY_STORE = "med_history";
+function loadHistory(){
+  try{ return JSON.parse(localStorage.getItem(HISTORY_STORE) || "[]"); }catch(_){ return []; }
+}
+function addHistory(patient, meds){
+  const list = loadHistory();
+  let label = "방금";
+  try{ label = new Date().toLocaleString("ko-KR",{month:"long",day:"numeric",hour:"2-digit",minute:"2-digit"}); }catch(_){}
+  list.unshift({ id:String(Date.now()), at:label, patient:patient, meds:meds });
+  localStorage.setItem(HISTORY_STORE, JSON.stringify(list.slice(0,10))); // 최근 10개만
+}
+function renderHistory(){
+  const list = loadHistory();
+  const wrap = byId("histList");
+  if(!list.length){
+    wrap.innerHTML = `<div class="hist-empty">아직 기록이 없어요.<br>약봉투를 찍으면 여기에 저장돼요.</div>`;
+    return;
+  }
+  wrap.innerHTML = list.map(item=>`
+    <button class="hist-item" data-id="${esc(item.id)}">
+      <div class="ic">💊</div>
+      <div>
+        <div class="who">${esc(item.patient && item.patient.name || "약 정보")} 님</div>
+        <div class="meta">약 ${item.meds.length}개 · ${esc(item.at)}</div>
+      </div>
+    </button>`).join("");
+  wrap.querySelectorAll(".hist-item").forEach(el=>{
+    el.addEventListener("click", ()=>{
+      const item = loadHistory().find(h=>h.id === el.dataset.id);
+      if(item) showMedicines(item.meds, item.patient);
+    });
+  });
+}
+
+/* ===== 사진을 골랐을 때 → 잠깐 읽는 척하고 정해진 결과 표시 ===== */
+function onPhotoChosen(e){
+  const file = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if(!file) return;
+
+  const url = URL.createObjectURL(file);
+  const prev = byId("preview");
+  prev.src = url; prev.style.display = "block";
+  byId("loadingSub").textContent = "약봉투를 읽고 있어요";
+  show("loading");
+
+  // 어떤 사진이든 동일한 결과로 (아이디어 시연용)
+  setTimeout(()=>{
+    addHistory(PATIENT, FIXED_MEDS);   // 최근 기록에 저장
+    showMedicines(FIXED_MEDS, PATIENT);
+  }, 1600);
+}
+
+/* ===== 약 목록을 화면에 그려주기 + 자동 음성 ===== */
+function esc(s){ const d=document.createElement("div"); d.textContent = (s==null?"":String(s)); return d.innerHTML; }
+
+function medCardHTML(m, i, total){
+  const idx = total > 1 ? `<div class="med-index">${i+1}번째 약</div>` : "";
+  const freq = m.times ? `<div class="freq">🔔 하루 ${m.times}번</div>` : "";
+  return `<div class="med">
+    ${idx}
+    <div class="result-name">${esc(m.name)}</div>
+    ${freq}
+    <div class="card"><div class="label">💡 무슨 약인가요?</div><div class="value">${esc(m.effect)}</div></div>
+    <div class="card"><div class="label">⏰ 언제 몇 개 먹나요?</div><div class="value">${esc(m.dose)}</div></div>
+    <div class="card warn"><div class="label">⚠️ 주의하세요</div><div class="value">${esc(m.warn)}</div></div>
+  </div>`;
+}
+
+function showMedicines(list, patient){
+  currentMeds = list;
+  currentPatient = patient || PATIENT;
+  const pt = currentPatient;
+
+  // 환자 이름 + 복약 기간 표시
+  const p = byId("patientInfo");
+  p.style.display = "block";
+  p.innerHTML = `
+    <div class="who">${esc(pt.name)} 님</div>
+    <div class="row">🗓️ 복용 기간 <b>${esc(pt.from)} ~ ${esc(pt.to)}</b> (${esc(pt.days)})</div>
+    <div class="row">🏥 ${esc(pt.clinic)}</div>`;
+
+  // 하루 몇 번 먹어야 하는지 요약
+  const times = list.map(m=>m.times||0).filter(Boolean);
+  const ds = byId("doseSummary");
+  if(times.length){
+    const maxT = Math.max(...times);
+    const days = list.find(m=>m.days) ? list.find(m=>m.days).days : null;
+    ds.style.display = "block";
+    ds.innerHTML = `🔔 하루 최대 <b>${maxT}번</b>${days?`, <b>${days}일간</b>`:""} 드세요`;
+  }else{
+    ds.style.display = "none";
+  }
+
+  const countEl = byId("medCount");
+  if(list.length > 1){
+    countEl.style.display = "block";
+    countEl.textContent = `약이 ${list.length}개 있어요`;
+  }else{
+    countEl.style.display = "none";
+  }
+  byId("medList").innerHTML = list.map((m,i)=>medCardHTML(m,i,list.length)).join("");
+  show("result");
+  speakCurrent();
+}
+
+/* ===== 음성으로 읽어주기 (Web Speech API) ===== */
+function buildSpeech(list){
+  const parts = [];
+  const pt = currentPatient || PATIENT;
+  parts.push(`${pt.name} 님, ${pt.days} 드실 약이에요.`);
+  const times = list.map(m=>m.times||0).filter(Boolean);
+  if(times.length) parts.push(`하루 최대 ${Math.max(...times)}번 드셔야 해요.`);
+  if(list.length > 1) parts.push(`약이 ${list.length}개 있어요.`);
+  list.forEach((m,i)=>{
+    const pre = list.length > 1 ? `${i+1}번째 약, ` : "";
+    parts.push(`${pre}${m.name}. ${m.effect} ${m.dose} 주의하세요. ${m.warn}`);
+  });
+  return parts.join(" ");
+}
+function speakCurrent(){
+  if(!currentMeds.length) return;
+  if(!("speechSynthesis" in window)) return;
+  stopSpeak();
+  const u = new SpeechSynthesisUtterance(buildSpeech(currentMeds));
+  u.lang = "ko-KR";
+  u.rate = 0.9;
+  u.pitch = 1.0;
+  const btn = byId("listenBtn");
+  u.onstart = ()=> btn.classList.add("speaking");
+  u.onend   = ()=> btn.classList.remove("speaking");
+  window.speechSynthesis.speak(u);
+}
+function stopSpeak(){
+  if("speechSynthesis" in window) window.speechSynthesis.cancel();
+  byId("listenBtn").classList.remove("speaking");
+}
+
+/* ===== 복약 알람 (아침·낮·저녁) ===== */
+const ALARM_STORE = "med_alarms";
+const ALARM_LABELS = { morning:"아침", lunch:"낮", evening:"저녁" };
+let lastFired = "", toastTimer = null;
+
+function loadAlarms(){ try{ return JSON.parse(localStorage.getItem(ALARM_STORE) || "{}"); }catch(_){ return {}; } }
+function saveAlarmsFromUI(){
+  const d = {};
+  document.querySelectorAll("#remind .alarm-row").forEach(r=>{
+    d[r.dataset.key] = { time:r.querySelector(".al-time").value, on:r.querySelector(".al-on").checked };
+  });
+  localStorage.setItem(ALARM_STORE, JSON.stringify(d));
+}
+function initAlarms(){
+  const d = loadAlarms();
+  document.querySelectorAll("#remind .alarm-row").forEach(r=>{
+    const s = d[r.dataset.key];
+    if(s){ if(s.time) r.querySelector(".al-time").value = s.time; r.querySelector(".al-on").checked = !!s.on; }
+    r.querySelector(".al-time").addEventListener("change", saveAlarmsFromUI);
+    r.querySelector(".al-on").addEventListener("change", saveAlarmsFromUI);
+  });
+  const t = byId("alarmTest"); if(t) t.addEventListener("click", ()=> fireAlarm());
+  const off = byId("alarmOff"); if(off) off.addEventListener("click", turnOffAlarm);
+  setInterval(checkAlarms, 20000);  // 20초마다 시각 확인
+}
+function pad2(n){ return String(n).padStart(2,"0"); }
+function checkAlarms(){
+  const d = loadAlarms(), now = new Date();
+  const hhmm = pad2(now.getHours()) + ":" + pad2(now.getMinutes());
+  Object.keys(ALARM_LABELS).forEach(k=>{
+    const a = d[k];
+    if(a && a.on && a.time === hhmm){
+      const tag = k + hhmm;
+      if(lastFired !== tag){ lastFired = tag; fireAlarm(ALARM_LABELS[k]); }
+    }
+  });
+}
+/* 알람 시계 오버레이: 5초간 진동+경고음, 안 끄면 1분 뒤 다시 */
+let alarmRingTimer = null, alarmSnoozeTimer = null, alarmActiveLabel = null;
+function fireAlarm(label){ ringAlarm(label || ""); }
+function ringAlarm(label){
+  alarmActiveLabel = label;
+  const ov = byId("alarmOverlay");
+  byId("alarmMsg").textContent = `${label ? label + " " : ""}약 드실 시간이에요`;
+  byId("alarmTime").textContent = nowHHMMText();
+  ov.classList.add("show");
+  const clock = ov.querySelector(".clock"); if(clock) clock.classList.add("vibrate");
+  startBeep();                                   // 삐-삐-삐 경고음
+  try{ if(navigator.vibrate) navigator.vibrate([300,150,300,150,300,150,300,150,300]); }catch(_){}
+  speak(`${label ? label + " " : ""}약 드실 시간이에요`);
+  clearTimeout(alarmRingTimer);
+  alarmRingTimer = setTimeout(alarmAutoSnooze, 5000);   // 5초 안 끄면 스누즈
+}
+function alarmAutoSnooze(){
+  stopRing(); hideAlarmOverlay();
+  clearTimeout(alarmSnoozeTimer);
+  alarmSnoozeTimer = setTimeout(()=> ringAlarm(alarmActiveLabel), 60000);  // 1분 뒤 다시
+}
+function stopRing(){
+  stopBeep();
+  try{ if(navigator.vibrate) navigator.vibrate(0); }catch(_){}
+  const c = byId("alarmOverlay").querySelector(".clock"); if(c) c.classList.remove("vibrate");
+  if("speechSynthesis" in window) window.speechSynthesis.cancel();
+}
+function hideAlarmOverlay(){ byId("alarmOverlay").classList.remove("show"); }
+function turnOffAlarm(){
+  stopRing(); hideAlarmOverlay();
+  clearTimeout(alarmRingTimer); clearTimeout(alarmSnoozeTimer);
+  alarmActiveLabel = null;
+}
+function nowHHMMText(){ try{ return new Date().toLocaleTimeString("ko-KR",{hour:"2-digit",minute:"2-digit"}); }catch(_){ return ""; } }
+function showToast(msg){
+  const t = byId("toast"); if(!t) return;
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> t.classList.remove("show"), 6000);
+}
+
+/* ===== 약이 며칠 남았나요? (이름별 저장 데이터 기준, 3일 전 알림) ===== */
+const DEMO_TODAY = new Date(2026, 6, 9);  // 시연 기준일: 2026-07-09
+function parseDate(s){ const p = String(s||"").split("-"); return p.length === 3 ? new Date(+p[0], +p[1]-1, +p[2]) : null; }
+function daysLeft(toStr){ const to = parseDate(toStr); return to ? Math.ceil((to - DEMO_TODAY) / 86400000) : null; }
+
+/* 앱에 저장된 사람들(가족 + 내 최근 기록)을 이름별로 모음 */
+function collectPeople(){
+  const people = [];
+  loadFamily().forEach(m=>{ if(m.meds && m.meds.length) people.push({ name:m.name, meds:m.meds, patient:m.patient || {} }); });
+  const hist = loadHistory();
+  if(hist.length){ const h = hist[0]; people.push({ name:(h.patient && h.patient.name) || "나", meds:h.meds || [], patient:h.patient || {} }); }
+  return people;
+}
+function renderRemind(){
+  const people = collectPeople();
+  const wrap = byId("supplyList");
+  if(!people.length){
+    wrap.innerHTML = `<div class="hist-empty">약을 찍거나 가족을 등록하면<br>약이 며칠 남았는지 알려드려요.</div>`;
+    return;
+  }
+  let soon = 0;
+  const cards = people.map(p=>{
+    const to = p.patient && p.patient.to;
+    const d = daysLeft(to);
+    let badge, cls, warn = false;
+    if(d === null){ badge = "복용일 정보 없음"; cls = "done"; }
+    else if(d <= 0){ badge = "복용이 끝났어요"; cls = "done"; }
+    else if(d <= 3){ badge = `⚠️ ${d}일 후 약이 떨어져요`; cls = "soon"; warn = true; soon++; }
+    else { badge = `약이 ${d}일 남았어요`; cls = "ok"; }
+    const info = to ? `복용 완료일 ${esc(to)} · 약 ${p.meds.length}개` : `약 ${p.meds.length}개`;
+    return `<div class="supply-item ${warn?"warn":""}">
+      <div class="s-name">${esc(p.name)} 님</div>
+      <div class="s-info">${info}</div>
+      <div class="s-badge ${cls}">${badge}</div>
+    </div>`;
+  }).join("");
+  const banner = soon
+    ? `<div class="supply-banner">⚠️ 3일 안에 약이 떨어지는 분이 ${soon}명 있어요.<br>미리 병원에 방문하세요!</div>`
+    : "";
+  wrap.innerHTML = banner + cards;
+}
+
+/* 앱이 열리면 웰컴(인사) 화면 시작 + 알람 준비 */
+startWelcome();
+initAlarms();
+</script>
+</body>
+</html>
